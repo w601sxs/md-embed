@@ -1,0 +1,10 @@
+{
+    "version": "1.0",
+    "type": "rich",
+    "provider_name": "Markdown + LaTeX Viewer",
+    "provider_url": "https://your-domain.com",
+    "title": "Markdown + LaTeX Content",
+    "html": "<iframe src='%{url}' style='width: 100%; height: 500px; border: none; overflow: hidden;' scrolling='no' allowfullscreen></iframe>",
+    "width": 800,
+    "height": 500
+}
