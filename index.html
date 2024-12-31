@@ -75,6 +75,16 @@
                     alert('Failed to copy HTML. Please copy it manually.');
                 });
             }
+
+            window.createShareableLink = function() {
+                const encoded = btoa(encodeURIComponent(editor.value));
+                const viewUrl = `view.html#${encoded}`;
+                navigator.clipboard.writeText(new URL(viewUrl, window.location.href).href).then(() => {
+                    alert('Shareable link copied to clipboard!');
+                }).catch(() => {
+                    alert('Failed to copy link. Please copy the URL manually.');
+                });
+            }
         };
         
         function debounce(func, wait) {
@@ -161,8 +171,9 @@
 <body>
     <h1>Markdown + LaTeX Editor</h1>
     <div class="buttons">
-        <button onclick="copyLink()">Copy Shareable Link</button>
+        <button onclick="copyLink()">Copy Editor Link</button>
         <button onclick="copyHTML()">Copy HTML</button>
+        <button onclick="createShareableLink()">Create Shareable Link</button>
     </div>
     <div class="container">
         <div class="editor-container">
