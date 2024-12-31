@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markdown + LaTeX Viewer</title>
+    <!-- oEmbed support -->
+    <link rel="alternate" type="application/json+oembed" 
+          href="oembed.json" 
+          title="Markdown + LaTeX Content" />
     <!-- Meta tags for better embedding -->
     <meta name="description" content="View formatted Markdown and LaTeX content">
     <meta property="og:title" content="Markdown + LaTeX Viewer">
@@ -20,56 +24,38 @@
             },
             svg: {
                 fontCache: 'none'
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        // Dispatch event when rendering is complete
+                        window.parent.postMessage({ type: 'render-complete' }, '*');
+                    });
+                }
             }
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js" async></script>
     <script>
-        window.onload = function() {
-            const content = document.getElementById('content');
-            
-            // Get content from URL params
+        // Pre-render content immediately without waiting for onload
+        (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const encodedContent = urlParams.get('content');
             
             if (encodedContent) {
                 try {
                     const decodedContent = decodeURIComponent(atob(encodedContent));
-                    renderContent(decodedContent);
-                    
-                    // Update meta tags with actual content
-                    const previewText = content.textContent.slice(0, 150) + '...';
-                    document.querySelector('meta[name="description"]').setAttribute('content', previewText);
-                    document.querySelector('meta[property="og:description"]').setAttribute('content', previewText);
-                    
-                    // Update title with first heading if available
-                    const firstHeading = content.querySelector('h1');
-                    if (firstHeading) {
-                        const title = firstHeading.textContent;
-                        document.title = title;
-                        document.querySelector('meta[property="og:title"]').setAttribute('content', title);
-                    }
+                    // Insert content immediately
+                    document.write('<div class="container"><div id="content">' + 
+                        marked.parse(decodedContent) + 
+                        '</div></div>');
                 } catch (e) {
-                    console.error('Failed to load content from URL');
-                    content.innerHTML = '<p>Error: Failed to load content.</p>';
+                    document.write('<div class="container"><div id="content"><p>Error: Failed to load content.</p></div></div>');
                 }
             } else {
-                content.innerHTML = '<p>No content to display.</p>';
+                document.write('<div class="container"><div id="content"><p>No content to display.</p></div></div>');
             }
-
-            function renderContent(markdown) {
-                // Convert Markdown to HTML
-                content.innerHTML = marked.parse(markdown);
-                
-                // Render LaTeX
-                if (window.MathJax) {
-                    MathJax.typesetClear([content]);
-                    MathJax.typesetPromise([content]).catch(err => {
-                        console.error('MathJax error:', err);
-                    });
-                }
-            }
-        };
+        })();
     </script>
     <style>
         body {
@@ -77,6 +63,7 @@
             margin: 0;
             padding: 20px;
             background: #f5f5f5;
+            min-height: 100vh;
         }
         
         .container {
@@ -90,26 +77,72 @@
         
         #content {
             line-height: 1.6;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
         }
         
-        /* Basic content styling */
-        #content h1 { font-size: 2em; margin-bottom: 0.5em; }
-        #content h2 { font-size: 1.5em; margin: 1em 0 0.5em; }
-        #content p { margin: 0.5em 0; }
-        #content pre { background: #f7f7f7; padding: 1em; border-radius: 4px; overflow-x: auto; }
-        #content code { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace; }
-        #content img { max-width: 100%; height: auto; }
-        #content blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 1em; }
+        /* Enhanced content styling */
+        #content h1 { font-size: 2em; margin: 0.67em 0; }
+        #content h2 { font-size: 1.5em; margin: 0.83em 0; }
+        #content h3 { font-size: 1.17em; margin: 1em 0; }
+        #content h4 { font-size: 1em; margin: 1.33em 0; }
+        #content h5 { font-size: 0.83em; margin: 1.67em 0; }
+        #content h6 { font-size: 0.67em; margin: 2.33em 0; }
+        #content p { margin: 1em 0; }
+        #content pre { 
+            background: #f7f7f7; 
+            padding: 1em; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+        #content code { 
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            background: #f7f7f7;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+        #content img { 
+            max-width: 100%; 
+            height: auto; 
+            margin: 1em 0;
+        }
+        #content blockquote { 
+            border-left: 4px solid #ddd; 
+            margin: 1em 0; 
+            padding-left: 1em; 
+            color: #666;
+        }
+        #content ul, #content ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+        #content table {
+            border-collapse: collapse;
+            margin: 1em 0;
+            width: 100%;
+        }
+        #content table th, #content table td {
+            border: 1px solid #ddd;
+            padding: 0.5em;
+        }
+        #content hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 1em 0;
+        }
+        .mjx-chtml {
+            margin: 1em 0 !important;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="content">
-            <!-- Content will be loaded here -->
-            <noscript>
+    <noscript>
+        <div class="container">
+            <div id="content">
                 <p>JavaScript is required to view this content.</p>
-            </noscript>
+            </div>
         </div>
-    </div>
+    </noscript>
 </body>
 </html>
