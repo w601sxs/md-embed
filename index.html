@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Markdown + LaTeX Editor</title>
+    <!-- Meta tags for better embedding -->
+    <meta name="description" content="A simple editor for Markdown and LaTeX content">
+    <meta property="og:title" content="Markdown + LaTeX Editor">
+    <meta property="og:description" content="Create and share formatted content with Markdown and LaTeX equations">
+    <meta property="og:type" content="website">
     <!-- Marked for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
     <!-- MathJax for LaTeX -->
@@ -24,11 +29,12 @@
             const editor = document.getElementById('editor');
             const preview = document.getElementById('preview');
             
-            // Initialize with URL hash content if present
-            const hash = window.location.hash.slice(1);
-            if (hash) {
+            // Initialize with URL params content if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const content = urlParams.get('content');
+            if (content) {
                 try {
-                    editor.value = decodeURIComponent(atob(hash));
+                    editor.value = decodeURIComponent(atob(content));
                     renderMarkdown();
                 } catch (e) {
                     console.error('Failed to load content from URL');
@@ -42,12 +48,13 @@
             renderMarkdown();
 
             function renderMarkdown() {
-                // Update URL with base64 encoded content
-                const encoded = btoa(encodeURIComponent(editor.value));
-                window.location.hash = encoded;
-                
                 // Convert Markdown to HTML
                 preview.innerHTML = marked.parse(editor.value);
+                
+                // Update meta description with preview text
+                const previewText = preview.textContent.slice(0, 150) + '...';
+                document.querySelector('meta[name="description"]').setAttribute('content', previewText);
+                document.querySelector('meta[property="og:description"]').setAttribute('content', previewText);
                 
                 // Render LaTeX
                 if (window.MathJax) {
@@ -78,7 +85,7 @@
 
             window.createShareableLink = function() {
                 const encoded = btoa(encodeURIComponent(editor.value));
-                const viewUrl = `view.html#${encoded}`;
+                const viewUrl = `view.html?content=${encoded}`;
                 navigator.clipboard.writeText(new URL(viewUrl, window.location.href).href).then(() => {
                     alert('Shareable link copied to clipboard!');
                 }).catch(() => {
