@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markdown + LaTeX Viewer</title>
+    <!-- Meta tags for better embedding -->
+    <meta name="description" content="View formatted Markdown and LaTeX content">
+    <meta property="og:title" content="Markdown + LaTeX Viewer">
+    <meta property="og:description" content="View formatted content with Markdown and LaTeX equations">
+    <meta property="og:type" content="article">
     <!-- Marked for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
     <!-- MathJax for LaTeX -->
@@ -23,12 +28,27 @@
         window.onload = function() {
             const content = document.getElementById('content');
             
-            // Get content from URL hash
-            const hash = window.location.hash.slice(1);
-            if (hash) {
+            // Get content from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedContent = urlParams.get('content');
+            
+            if (encodedContent) {
                 try {
-                    const decodedContent = decodeURIComponent(atob(hash));
+                    const decodedContent = decodeURIComponent(atob(encodedContent));
                     renderContent(decodedContent);
+                    
+                    // Update meta tags with actual content
+                    const previewText = content.textContent.slice(0, 150) + '...';
+                    document.querySelector('meta[name="description"]').setAttribute('content', previewText);
+                    document.querySelector('meta[property="og:description"]').setAttribute('content', previewText);
+                    
+                    // Update title with first heading if available
+                    const firstHeading = content.querySelector('h1');
+                    if (firstHeading) {
+                        const title = firstHeading.textContent;
+                        document.title = title;
+                        document.querySelector('meta[property="og:title"]').setAttribute('content', title);
+                    }
                 } catch (e) {
                     console.error('Failed to load content from URL');
                     content.innerHTML = '<p>Error: Failed to load content.</p>';
@@ -72,17 +92,24 @@
             line-height: 1.6;
         }
         
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
+        /* Basic content styling */
+        #content h1 { font-size: 2em; margin-bottom: 0.5em; }
+        #content h2 { font-size: 1.5em; margin: 1em 0 0.5em; }
+        #content p { margin: 0.5em 0; }
+        #content pre { background: #f7f7f7; padding: 1em; border-radius: 4px; overflow-x: auto; }
+        #content code { font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace; }
+        #content img { max-width: 100%; height: auto; }
+        #content blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 1em; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="content"></div>
+        <div id="content">
+            <!-- Content will be loaded here -->
+            <noscript>
+                <p>JavaScript is required to view this content.</p>
+            </noscript>
+        </div>
     </div>
 </body>
 </html>
-
