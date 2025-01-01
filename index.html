@@ -151,6 +151,27 @@
                 });
             }
 
+
+            
+            window.copyImage = function () {
+            const preview = document.getElementById('preview');
+            const copyButton = document.getElementById('copyImageBtn');
+    
+            html2canvas(preview).then(canvas => {
+                canvas.toBlob(blob => {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+                        showButtonFeedback(copyButton, 'Copied!');
+                    }).catch(() => {
+                        showButtonFeedback(copyButton, 'Failed to Copy');
+                    });
+                });
+            }).catch(err => {
+                console.error('Error capturing image:', err);
+                showButtonFeedback(copyButton, 'Capture Failed');
+            });
+        };
+            
+
             window.createShareableLink = function() {
                 const encoded = btoa(encodeURIComponent(editor.value));
                 const encodedTitle = btoa(encodeURIComponent(titleInput.value));
@@ -164,23 +185,6 @@
             }
         };
 
-        window.copyImage = function () {
-        const preview = document.getElementById('preview');
-        const copyButton = document.getElementById('copyImageBtn');
-
-        html2canvas(preview).then(canvas => {
-            canvas.toBlob(blob => {
-                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-                    showButtonFeedback(copyButton, 'Copied!');
-                }).catch(() => {
-                    showButtonFeedback(copyButton, 'Failed to Copy');
-                });
-            });
-        }).catch(err => {
-            console.error('Error capturing image:', err);
-            showButtonFeedback(copyButton, 'Capture Failed');
-        });
-    };
         
         function debounce(func, wait) {
             let timeout;
