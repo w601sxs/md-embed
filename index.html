@@ -11,6 +11,30 @@
     <meta property="og:type" content="website">
     <!-- Marked for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+    window.copyImage = function() {
+        const preview = document.getElementById('preview');
+        html2canvas(preview).then(canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+                    showButtonFeedback(document.getElementById('copyImageBtn'), 'Image Copied!');
+                }).catch(() => {
+                    showButtonFeedback(document.getElementById('copyImageBtn'), 'Failed to copy');
+                });
+            });
+        }).catch(err => {
+            console.error('Error capturing image:', err);
+            showButtonFeedback(document.getElementById('copyImageBtn'), 'Failed to capture');
+        });
+    };
+</script>
+
+
+
+
+    
     <!-- MathJax for LaTeX -->
     <script>
         window.MathJax = {
@@ -284,11 +308,13 @@
 </head>
 <body>
     <h1 id="mainTitle">Markdown + LaTeX Editor</h1>
+
     <div class="buttons">
-        <button onclick="copyLink()" class="btn" id="copyLinkBtn" disabled>Copy Editor Link</button>
-        <button onclick="copyHTML()" class="btn btn-enabled">Copy HTML</button>
-        <button onclick="createShareableLink()" class="btn" id="shareableLinkBtn" disabled>Create Shareable Link</button>
-    </div>
+    <button onclick="copyLink()" class="btn" id="copyLinkBtn" disabled>Copy Editor Link</button>
+    <button onclick="copyHTML()" class="btn btn-enabled">Copy HTML</button>
+    <button onclick="createShareableLink()" class="btn" id="shareableLinkBtn" disabled>Create Shareable Link</button>
+    <button onclick="copyImage()" class="btn btn-enabled" id="copyImageBtn">Copy Image</button>
+</div>
     <div class="container">
         <div class="editor-container">
             <div class="title-inputs">
