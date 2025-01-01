@@ -43,26 +43,36 @@
             const encodedContent = urlParams.get('content');
             const encodedTitle = urlParams.get('title');
             const encodedSubtitle = urlParams.get('subtitle');
-            
+    
             if (encodedContent && encodedTitle) {
                 try {
                     const decodedContent = decodeURIComponent(atob(encodedContent));
                     const decodedTitle = decodeURIComponent(atob(encodedTitle));
                     const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
-                    
-                    // Update page title and meta tags
-                    document.getElementById('pageTitle').textContent = decodedTitle;
-                    document.getElementById('ogTitle').setAttribute('content', decodedTitle);
-                    
-                    if (decodedSubtitle) {
-                        document.getElementById('pageDescription').setAttribute('content', decodedSubtitle);
-                        document.getElementById('ogDescription').setAttribute('content', decodedSubtitle);
-                    } else {
-                        document.getElementById('pageDescription').setAttribute('content', 'View formatted Markdown and LaTeX content');
-                    }
-                    
-                    // Insert content
-                    document.write('<div class="container"><h1>' + decodedTitle + '</h1>');
+            
+                    // Update meta tags BEFORE writing any content
+                    const metaTags = {
+                        'pageTitle': decodedTitle,
+                        'ogTitle': decodedTitle,
+                        'pageDescription': decodedSubtitle || 'View formatted Markdown and LaTeX content',
+                        'ogDescription': decodedSubtitle || 'View formatted Markdown and LaTeX content'
+                    };
+
+                    // Update all meta tags
+                    Object.entries(metaTags).forEach(([id, content]) => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            if (element.tagName === 'TITLE') {
+                                element.textContent = content;
+                            } else {
+                                element.setAttribute('content', content);
+                            }
+                        }
+                    });
+            
+                    // Write the content
+                    document.write('<div class="container">');
+                    document.write('<h1>' + decodedTitle + '</h1>');
                     if (decodedSubtitle) {
                         document.write('<h2>' + decodedSubtitle + '</h2>');
                     }
