@@ -35,7 +35,14 @@
             function validateTitle() {
                 const isEmpty = titleInput.value.trim() === '';
                 errorMessage.style.display = isEmpty ? 'block' : 'none';
-                buttons.forEach(button => button.disabled = isEmpty);
+                const buttonsToToggle = [
+                    document.getElementById('copyLinkBtn'),
+                    document.getElementById('shareableLinkBtn')
+                ];
+                buttonsToToggle.forEach(button => {
+                    button.disabled = isEmpty;
+                    button.classList.toggle('btn-enabled', !isEmpty);
+                });
             }
 
             titleInput.addEventListener('input', validateTitle);
@@ -86,13 +93,16 @@
 
             function showButtonFeedback(button, message) {
                 const originalText = button.textContent;
+                const originalClass = button.className;
                 button.textContent = message;
+                button.className = 'btn btn-enabled';
                 button.style.backgroundColor = '#28a745';
                 button.disabled = true;
                 setTimeout(() => {
                     button.textContent = originalText;
+                    button.className = originalClass;
                     button.style.backgroundColor = '';
-                    button.disabled = false;
+                    button.disabled = button.id !== 'copyHtmlBtn';
                 }, 2000);
             }
 
@@ -101,9 +111,9 @@
                 const encodedTitle = btoa(encodeURIComponent(titleInput.value));
                 const link = `${window.location.origin}${window.location.pathname}?content=${encoded}&title=${encodedTitle}`;
                 navigator.clipboard.writeText(link).then(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(1)'), 'Copied!');
+                    showButtonFeedback(document.getElementById('copyLinkBtn'), 'Copied!');
                 }).catch(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(1)'), 'Failed to copy');
+                    showButtonFeedback(document.getElementById('copyLinkBtn'), 'Failed to copy');
                 });
             }
 
@@ -121,9 +131,9 @@
                 const encodedTitle = btoa(encodeURIComponent(titleInput.value));
                 const viewUrl = `view.html?content=${encoded}&title=${encodedTitle}`;
                 navigator.clipboard.writeText(new URL(viewUrl, window.location.href).href).then(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(3)'), 'Copied!');
+                    showButtonFeedback(document.getElementById('shareableLinkBtn'), 'Copied!');
                 }).catch(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(3)'), 'Failed to copy');
+                    showButtonFeedback(document.getElementById('shareableLinkBtn'), 'Failed to copy');
                 });
             }
         };
@@ -228,17 +238,37 @@
         }
 
         button:disabled {
-            background-color: #28a745;
+            opacity: 1;
+        }
+
+        .btn {
+            background-color: #cccccc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
             cursor: not-allowed;
+            margin: 0 5px;
+            font-size: 14px;
+            transition: background-color 0.3s, cursor 0.3s;
+        }
+
+        .btn-enabled {
+            background-color: #007bff;
+            cursor: pointer;
+        }
+
+        .btn-enabled:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1 id="mainTitle">Markdown + LaTeX Editor</h1>
     <div class="buttons">
-        <button onclick="copyLink()">Copy Editor Link</button>
-        <button onclick="copyHTML()">Copy HTML</button>
-        <button onclick="createShareableLink()">Create Shareable Link</button>
+        <button onclick="copyLink()" class="btn" id="copyLinkBtn" disabled>Copy Editor Link</button>
+        <button onclick="copyHTML()" class="btn btn-enabled">Copy HTML</button>
+        <button onclick="createShareableLink()" class="btn" id="shareableLinkBtn" disabled>Create Shareable Link</button>
     </div>
     <div class="container">
         <div class="editor-container">
