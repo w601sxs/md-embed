@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Markdown + LaTeX Viewer</title>
+    <title id="pageTitle">Markdown + LaTeX Viewer</title>
     <!-- oEmbed support -->
     <link rel="alternate" type="application/json+oembed" 
           href="oembed.json" 
           title="Markdown + LaTeX Content" />
     <!-- Meta tags for better embedding -->
-    <meta name="description" content="View formatted Markdown and LaTeX content">
-    <meta property="og:title" content="Markdown + LaTeX Viewer">
-    <meta property="og:description" content="View formatted content with Markdown and LaTeX equations">
+    <meta name="description" id="pageDescription" content="View formatted Markdown and LaTeX content">
+    <meta property="og:title" id="ogTitle" content="Markdown + LaTeX Viewer">
+    <meta property="og:description" id="ogDescription" content="View formatted content with Markdown and LaTeX equations">
     <meta property="og:type" content="article">
     <!-- Marked for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
@@ -50,19 +50,20 @@
                     const decodedTitle = decodeURIComponent(atob(encodedTitle));
                     const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
                     
-                    // Update meta tags
-                    document.title = decodedTitle;
-                    document.querySelector('meta[property="og:title"]').setAttribute('content', decodedTitle);
-                    document.querySelector('meta[name="description"]').setAttribute('content', decodedSubtitle || decodedTitle);
-                    document.querySelector('meta[property="og:description"]').setAttribute('content', decodedSubtitle || decodedTitle);
+                    // Update page title and meta tags
+                    document.getElementById('pageTitle').textContent = decodedTitle;
+                    document.getElementById('ogTitle').setAttribute('content', decodedTitle);
+                    document.getElementById('pageDescription').setAttribute('content', decodedSubtitle || decodedTitle);
+                    document.getElementById('ogDescription').setAttribute('content', decodedSubtitle || decodedTitle);
                     
-                    // Insert content immediately
-                    document.write('<div class="container"><div id="content">' +
-                        `<h1>${decodedTitle}</h1>` +
-                        (decodedSubtitle ? `<h2>${decodedSubtitle}</h2>` : '') +
-                        marked.parse(decodedContent) +
-                        '</div></div>');
+                    // Insert content
+                    document.write('<div class="container"><h1>' + decodedTitle + '</h1>');
+                    if (decodedSubtitle) {
+                        document.write('<h2>' + decodedSubtitle + '</h2>');
+                    }
+                    document.write('<div id="content">' + marked.parse(decodedContent) + '</div></div>');
                 } catch (e) {
+                    console.error('Failed to load content from URL');
                     document.write('<div class="container"><div id="content"><p>Error: Failed to load content.</p></div></div>');
                 }
             } else {
@@ -159,3 +160,4 @@
     </noscript>
 </body>
 </html>
+

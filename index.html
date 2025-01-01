@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Markdown + LaTeX Editor</title>
+    <title id="pageTitle">Simple Markdown + LaTeX Editor</title>
     <!-- Meta tags for better embedding -->
-    <meta name="description" content="A simple editor for Markdown and LaTeX content">
-    <meta property="og:title" content="Markdown + LaTeX Editor">
-    <meta property="og:description" content="Create and share formatted content with Markdown and LaTeX equations">
+    <meta name="description" id="pageDescription" content="A simple editor for Markdown and LaTeX content">
+    <meta property="og:title" id="ogTitle" content="Markdown + LaTeX Editor">
+    <meta property="og:description" id="ogDescription" content="Create and share formatted content with Markdown and LaTeX equations">
     <meta property="og:type" content="website">
     <!-- Marked for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
@@ -68,6 +68,16 @@
 
             function renderMarkdown() {
                 validateTitle();
+                
+                // Update page title and meta tags
+                const pageTitle = titleInput.value || 'Markdown + LaTeX Editor';
+                const pageDescription = subtitleInput.value || 'Create and share formatted content with Markdown and LaTeX equations';
+                
+                document.getElementById('pageTitle').textContent = pageTitle;
+                document.getElementById('ogTitle').setAttribute('content', pageTitle);
+                document.getElementById('pageDescription').setAttribute('content', pageDescription);
+                document.getElementById('ogDescription').setAttribute('content', pageDescription);
+                
                 // Convert Markdown to HTML
                 preview.innerHTML = `<h1>${titleInput.value}</h1>`;
                 if (subtitleInput.value) {
@@ -87,6 +97,7 @@
                         console.error('MathJax error:', err);
                     });
                 }
+                document.getElementById('mainTitle').textContent = pageTitle;
             }
 
             window.copyLink = function() {
@@ -229,7 +240,7 @@
     </style>
 </head>
 <body>
-    <h1>Markdown + LaTeX Editor</h1>
+    <h1 id="mainTitle">Markdown + LaTeX Editor</h1>
     <div class="buttons">
         <button onclick="copyLink()">Copy Editor Link</button>
         <button onclick="copyHTML()">Copy HTML</button>
