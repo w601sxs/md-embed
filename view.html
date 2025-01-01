@@ -3,19 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Markdown + LaTeX Viewer</title>
-    <!-- oEmbed support -->
-    <link rel="alternate" type="application/json+oembed" 
-          href="oembed.json" 
-          title="Markdown + LaTeX Content" />
-    <!-- Meta tags for better embedding -->
-    <meta name="description" id="pageDescription" content="View formatted Markdown and LaTeX content">
-    <meta property="og:title" id="ogTitle" content="Markdown + LaTeX Viewer">
-    <meta property="og:description" id="ogDescription" content="View formatted content with Markdown and LaTeX equations">
+    <title id="pageTitle"></title>
+    <meta name="description" id="pageDescription" content="">
+    <meta property="og:title" id="ogTitle" content="">
+    <meta property="og:description" id="ogDescription" content="">
     <meta property="og:type" content="article">
-    <!-- Marked for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
-    <!-- MathJax for LaTeX -->
     <script>
         window.MathJax = {
             tex: {
@@ -28,7 +21,6 @@
             startup: {
                 pageReady: () => {
                     return MathJax.startup.defaultPageReady().then(() => {
-                        // Dispatch event when rendering is complete
                         window.parent.postMessage({ type: 'render-complete' }, '*');
                     });
                 }
@@ -37,7 +29,6 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js" async></script>
     <script>
-        // Pre-render content immediately without waiting for onload
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const encodedContent = urlParams.get('content');
@@ -50,25 +41,20 @@
                     const decodedTitle = decodeURIComponent(atob(encodedTitle));
                     const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
             
-                    // Update meta tags BEFORE writing any content
-                    const metaTags = {
-                        'pageTitle': decodedTitle,
-                        'ogTitle': decodedTitle,
-                        'pageDescription': decodedSubtitle || 'View formatted Markdown and LaTeX content',
-                        'ogDescription': decodedSubtitle || 'View formatted Markdown and LaTeX content'
-                    };
+                    // Update meta tags
+                    document.title = decodedTitle;
+                    document.getElementById('pageTitle').textContent = decodedTitle;
+                    document.getElementById('ogTitle').setAttribute('content', decodedTitle);
+                    
+                    const description = decodedSubtitle || decodedTitle;
+                    document.getElementById('pageDescription').setAttribute('content', description);
+                    document.getElementById('ogDescription').setAttribute('content', description);
 
-                    // Update all meta tags
-                    Object.entries(metaTags).forEach(([id, content]) => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            if (element.tagName === 'TITLE') {
-                                element.textContent = content;
-                            } else {
-                                element.setAttribute('content', content);
-                            }
-                        }
-                    });
+                    // Remove oembed link to prevent it from overriding our dynamic content
+                    const oembedLink = document.querySelector('link[type="application/json+oembed"]');
+                    if (oembedLink) {
+                        oembedLink.parentNode.removeChild(oembedLink);
+                    }
             
                     // Write the content
                     document.write('<div class="container">');
@@ -107,7 +93,6 @@
             word-wrap: break-word;
         }
         
-        /* Enhanced content styling */
         #content h1 { font-size: 2em; margin: 0.67em 0; }
         #content h2 { font-size: 1.5em; margin: 0.83em 0; }
         #content h3 { font-size: 1.17em; margin: 1em 0; }
