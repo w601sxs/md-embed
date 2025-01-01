@@ -62,10 +62,13 @@
         }
 
         #preview {
-            height: 100%;
-            overflow-y: auto;
-            padding: 10px;
+            width: 100%;
+            height: auto;
+            min-height: 300px;
+            background: white;
+            font-family: inherit;
         }
+
 
         .buttons {
             text-align: center;
@@ -179,14 +182,14 @@ $$
                 buttonsToToggle.forEach(button => button.disabled = isEmpty);
             }
 
-            function renderMarkdown() {
+            async function renderMarkdown() {
                 validateTitle();
                 preview.innerHTML = marked.parse(editor.value);
                 if (window.MathJax) {
-                    MathJax.typesetClear([preview]);
-                    MathJax.typesetPromise([preview]);
+                    await MathJax.typesetPromise([preview]);
                 }
             }
+
 
             editor.addEventListener('input', renderMarkdown);
             renderMarkdown();
@@ -209,6 +212,24 @@ $$
             };
 
             window.copyImage = function () {
+            const preview = document.getElementById('preview');
+            html2canvas(preview, {
+                scale: 2, // Increase resolution for better image quality
+                useCORS: true, // Handle external resources
+                allowTaint: true,
+                logging: true
+            }).then(canvas => {
+                canvas.toBlob(blob => {
+                    navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]).then(() => {
+                        showButtonFeedback(document.getElementById('copyImageBtn'), 'Copied!');
+                    }).catch(err => console.error('Error copying image:', err));
+                });
+            });
+            };
+
+            window.copyImage2 = function () {
                 html2canvas(preview).then(canvas => {
                     canvas.toBlob(blob => {
                         navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
