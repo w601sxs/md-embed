@@ -217,7 +217,8 @@ $$
                 scale: 2, // Increase resolution for better image quality
                 useCORS: true, // Handle external resources
                 allowTaint: true,
-                logging: true
+                logging: true,
+                fontEmbedCSS: true,
             }).then(canvas => {
                 canvas.toBlob(blob => {
                     navigator.clipboard.write([
