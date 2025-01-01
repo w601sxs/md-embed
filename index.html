@@ -29,6 +29,7 @@
             const editor = document.getElementById('editor');
             const preview = document.getElementById('preview');
             const titleInput = document.getElementById('title');
+            const subtitleInput = document.getElementById('subtitle');
             const errorMessage = document.getElementById('errorMessage');
             const buttons = document.querySelectorAll('button');
 
@@ -45,17 +46,40 @@
                 });
             }
 
-            titleInput.addEventListener('input', validateTitle);
+            function updateMetaTags() {
+                const title = titleInput.value.trim() || 'Markdown + LaTeX Editor';
+                const subtitle = subtitleInput.value.trim();
+                
+                document.getElementById('pageTitle').textContent = title;
+                document.getElementById('ogTitle').setAttribute('content', title);
+                document.getElementById('mainTitle').textContent = title;
+                
+                if (subtitle) {
+                    document.getElementById('pageDescription').setAttribute('content', subtitle);
+                    document.getElementById('ogDescription').setAttribute('content', subtitle);
+                } else {
+                    document.getElementById('pageDescription').setAttribute('content', 'A simple editor for Markdown and LaTeX content');
+                    document.getElementById('ogDescription').setAttribute('content', 'Create and share formatted content with Markdown and LaTeX equations');
+                }
+            }
+
+            titleInput.addEventListener('input', () => {
+                validateTitle();
+                updateMetaTags();
+            });
+            subtitleInput.addEventListener('input', updateMetaTags);
             validateTitle(); // Initial check
             
             // Initialize with URL params content if present
             const urlParams = new URLSearchParams(window.location.search);
             const content = urlParams.get('content');
             const title = urlParams.get('title');
+            const subtitle = urlParams.get('subtitle');
             if (content) {
                 try {
                     editor.value = decodeURIComponent(atob(content));
                     titleInput.value = title ? decodeURIComponent(atob(title)) : '';
+                    subtitleInput.value = subtitle ? decodeURIComponent(atob(subtitle)) : '';
                     renderMarkdown();
                 } catch (e) {
                     console.error('Failed to load content from URL');
@@ -64,20 +88,13 @@
             
             // Set up live preview
             editor.addEventListener('input', debounce(renderMarkdown, 300));
-            titleInput.addEventListener('input', debounce(renderMarkdown, 300));
             
             // Initial render
             renderMarkdown();
 
             function renderMarkdown() {
                 validateTitle();
-                
-                // Update page title and meta tags
-                const pageTitle = titleInput.value || 'Markdown + LaTeX Editor';
-                
-                document.getElementById('pageTitle').textContent = pageTitle;
-                document.getElementById('ogTitle').setAttribute('content', pageTitle);
-                document.getElementById('mainTitle').textContent = pageTitle;
+                updateMetaTags();
                 
                 // Convert Markdown to HTML
                 preview.innerHTML = marked.parse(editor.value);
@@ -109,7 +126,8 @@
             window.copyLink = function() {
                 const encoded = btoa(encodeURIComponent(editor.value));
                 const encodedTitle = btoa(encodeURIComponent(titleInput.value));
-                const link = `${window.location.origin}${window.location.pathname}?content=${encoded}&title=${encodedTitle}`;
+                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
+                const link = `${window.location.origin}${window.location.pathname}?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
                 navigator.clipboard.writeText(link).then(() => {
                     showButtonFeedback(document.getElementById('copyLinkBtn'), 'Copied!');
                 }).catch(() => {
@@ -129,7 +147,8 @@
             window.createShareableLink = function() {
                 const encoded = btoa(encodeURIComponent(editor.value));
                 const encodedTitle = btoa(encodeURIComponent(titleInput.value));
-                const viewUrl = `view.html?content=${encoded}&title=${encodedTitle}`;
+                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
+                const viewUrl = `view.html?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
                 navigator.clipboard.writeText(new URL(viewUrl, window.location.href).href).then(() => {
                     showButtonFeedback(document.getElementById('shareableLinkBtn'), 'Copied!');
                 }).catch(() => {
@@ -164,7 +183,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            height: calc(100vh - 220px); /* Adjusted to make room for error message */
+            height: calc(100vh - 220px);
         }
         
         .editor-container, .preview-container {
@@ -274,6 +293,7 @@
         <div class="editor-container">
             <div class="title-inputs">
                 <input type="text" id="title" placeholder="Title (required)" required>
+                <input type="text" id="subtitle" placeholder="Subtitle (optional)">
             </div>
             <textarea id="editor" placeholder="Write your Markdown here... Use $...$ for inline LaTeX and $$...$$ for display LaTeX">
 # Welcome to the Markdown + LaTeX Editor!
