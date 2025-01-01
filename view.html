@@ -72,11 +72,8 @@
             
                     // Write the content
                     document.write('<div class="container">');
-                    document.write('<h1>' + decodedTitle + '</h1>');
-                    if (decodedSubtitle) {
-                        document.write('<h2>' + decodedSubtitle + '</h2>');
-                    }
-                    document.write('<div id="content">' + marked.parse(decodedContent) + '</div></div>');
+                    document.write('<div id="content">' + marked.parse(decodedContent) + '</div>');
+                    document.write('</div>');
                 } catch (e) {
                     console.error('Failed to load content from URL');
                     document.write('<div class="container"><div id="content"><p>Error: Failed to load content.</p></div></div>');
