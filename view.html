@@ -1,15 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Static meta tags that will be visible to crawlers -->
     <title>Markdown + LaTeX Viewer</title>
-    <meta name="description" content="View formatted content with Markdown and LaTeX equations">
+    
+    <!-- Essential meta tags for link previews -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://w601sxs.github.io">
     <meta property="og:title" content="Markdown + LaTeX Viewer">
     <meta property="og:description" content="View formatted content with Markdown and LaTeX equations">
-    <meta property="og:type" content="article">
     <meta property="og:site_name" content="Markdown + LaTeX Viewer">
+    
+    <!-- Twitter Card tags -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Markdown + LaTeX Viewer">
     <meta name="twitter:description" content="View formatted content with Markdown and LaTeX equations">
@@ -36,34 +39,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js" async></script>
     <script>
         (function() {
-            function updateMetaTags(title, description) {
-                document.title = title;
-                document.querySelector('meta[name="description"]').setAttribute('content', description);
-                document.querySelector('meta[property="og:title"]').setAttribute('content', title);
-                document.querySelector('meta[property="og:description"]').setAttribute('content', description);
-                document.querySelector('meta[name="twitter:title"]').setAttribute('content', title);
-                document.querySelector('meta[name="twitter:description"]').setAttribute('content', description);
-            }
-
             function init() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const encodedContent = urlParams.get('content');
                 const encodedTitle = urlParams.get('title');
                 const encodedSubtitle = urlParams.get('subtitle');
 
+                // Update meta tags only for human visitors
                 if (encodedTitle) {
                     try {
                         const decodedTitle = decodeURIComponent(atob(encodedTitle));
                         const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
                         const description = decodedSubtitle || decodedTitle;
-                        updateMetaTags(decodedTitle, description);
+                        
+                        // Update document title for browser tab
+                        document.title = decodedTitle;
                     } catch (e) {
-                        console.error('Failed to update meta tags:', e);
+                        console.error('Failed to update title:', e);
                     }
                 }
 
                 if (!encodedContent) {
-                    document.write('<div class="container"><div id="content"><p>No content to display.</p></div></div>');
+                    const container = document.createElement('div');
+                    container.className = 'container';
+                    container.innerHTML = '<div id="content"><p>No content to display.</p></div>';
+                    document.body.appendChild(container);
                     return;
                 }
 
@@ -81,7 +81,10 @@
                     document.body.appendChild(container);
                 } catch (e) {
                     console.error('Failed to load content:', e);
-                    document.write('<div class="container"><div id="content"><p>Error: Failed to load content.</p></div></div>');
+                    const container = document.createElement('div');
+                    container.className = 'container';
+                    container.innerHTML = '<div id="content"><p>Error: Failed to load content.</p></div>';
+                    document.body.appendChild(container);
                 }
             }
 
