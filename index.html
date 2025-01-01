@@ -11,13 +11,7 @@
     <meta property="og:type" content="website">
     <!-- Marked for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-
-
-
-    
     <!-- MathJax for LaTeX -->
     <script>
         window.MathJax = {
@@ -31,173 +25,6 @@
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js" async></script>
-    <script>
-        window.onload = function() {
-            const editor = document.getElementById('editor');
-            const preview = document.getElementById('preview');
-            const titleInput = document.getElementById('title');
-            const subtitleInput = document.getElementById('subtitle');
-            const errorMessage = document.getElementById('errorMessage');
-            const buttons = document.querySelectorAll('button');
-
-            function validateTitle() {
-                const isEmpty = titleInput.value.trim() === '';
-                errorMessage.style.display = isEmpty ? 'block' : 'none';
-                const buttonsToToggle = [
-                    document.getElementById('copyLinkBtn'),
-                    document.getElementById('shareableLinkBtn')
-                ];
-                buttonsToToggle.forEach(button => {
-                    button.disabled = isEmpty;
-                    button.classList.toggle('btn-enabled', !isEmpty);
-                });
-            }
-
-            function updateMetaTags() {
-                const title = titleInput.value.trim() || 'Markdown + LaTeX Editor';
-                const subtitle = subtitleInput.value.trim();
-                
-                document.getElementById('pageTitle').textContent = title;
-                document.getElementById('ogTitle').setAttribute('content', title);
-                document.getElementById('mainTitle').textContent = title;
-                
-                if (subtitle) {
-                    document.getElementById('pageDescription').setAttribute('content', subtitle);
-                    document.getElementById('ogDescription').setAttribute('content', subtitle);
-                } else {
-                    document.getElementById('pageDescription').setAttribute('content', 'A simple editor for Markdown and LaTeX content');
-                    document.getElementById('ogDescription').setAttribute('content', 'Create and share formatted content with Markdown and LaTeX equations');
-                }
-            }
-
-            titleInput.addEventListener('input', () => {
-                validateTitle();
-                updateMetaTags();
-            });
-            subtitleInput.addEventListener('input', updateMetaTags);
-            validateTitle(); // Initial check
-            
-            // Initialize with URL params content if present
-            const urlParams = new URLSearchParams(window.location.search);
-            const content = urlParams.get('content');
-            const title = urlParams.get('title');
-            const subtitle = urlParams.get('subtitle');
-            if (content) {
-                try {
-                    editor.value = decodeURIComponent(atob(content));
-                    titleInput.value = title ? decodeURIComponent(atob(title)) : '';
-                    subtitleInput.value = subtitle ? decodeURIComponent(atob(subtitle)) : '';
-                    renderMarkdown();
-                } catch (e) {
-                    console.error('Failed to load content from URL');
-                }
-            }
-            
-            // Set up live preview
-            editor.addEventListener('input', debounce(renderMarkdown, 300));
-            
-            // Initial render
-            renderMarkdown();
-
-            function renderMarkdown() {
-                validateTitle();
-                updateMetaTags();
-                
-                // Convert Markdown to HTML
-                preview.innerHTML = marked.parse(editor.value);
-                
-                // Render LaTeX
-                if (window.MathJax) {
-                    MathJax.typesetClear([preview]);
-                    MathJax.typesetPromise([preview]).catch(err => {
-                        console.error('MathJax error:', err);
-                    });
-                }
-            }
-
-            function showButtonFeedback(button, message) {
-                const originalText = button.textContent;
-                const originalClass = button.className;
-                button.textContent = message;
-                button.className = 'btn btn-enabled';
-                button.style.backgroundColor = '#28a745';
-                button.disabled = true;
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.className = originalClass;
-                    button.style.backgroundColor = '';
-                    button.disabled = button.id !== 'copyHtmlBtn';
-                }, 2000);
-            }
-
-            window.copyLink = function() {
-                const encoded = btoa(encodeURIComponent(editor.value));
-                const encodedTitle = btoa(encodeURIComponent(titleInput.value));
-                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
-                const link = `${window.location.origin}${window.location.pathname}?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
-                navigator.clipboard.writeText(link).then(() => {
-                    showButtonFeedback(document.getElementById('copyLinkBtn'), 'Copied!');
-                }).catch(() => {
-                    showButtonFeedback(document.getElementById('copyLinkBtn'), 'Failed to copy');
-                });
-            }
-
-            window.copyHTML = function() {
-                const html = preview.innerHTML;
-                navigator.clipboard.writeText(html).then(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Copied!');
-                }).catch(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Failed to copy');
-                });
-            }
-
-
-            
-            window.copyImage = function () {
-            const preview = document.getElementById('preview');
-            const copyButton = document.getElementById('copyImageBtn');
-    
-            html2canvas(preview).then(canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-                        showButtonFeedback(copyButton, 'Copied!');
-                    }).catch(() => {
-                        showButtonFeedback(copyButton, 'Failed to Copy');
-                    });
-                });
-            }).catch(err => {
-                console.error('Error capturing image:', err);
-                showButtonFeedback(copyButton, 'Capture Failed');
-            });
-        };
-            
-
-            window.createShareableLink = function() {
-                const encoded = btoa(encodeURIComponent(editor.value));
-                const encodedTitle = btoa(encodeURIComponent(titleInput.value));
-                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
-                const viewUrl = `view.html?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
-                navigator.clipboard.writeText(new URL(viewUrl, window.location.href).href).then(() => {
-                    showButtonFeedback(document.getElementById('shareableLinkBtn'), 'Copied!');
-                }).catch(() => {
-                    showButtonFeedback(document.getElementById('shareableLinkBtn'), 'Failed to copy');
-                });
-            }
-        };
-
-        
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-    </script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -205,7 +32,7 @@
             padding: 20px;
             background: #f5f5f5;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -214,14 +41,14 @@
             gap: 20px;
             height: calc(100vh - 220px);
         }
-        
+
         .editor-container, .preview-container {
             background: white;
             border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         #editor {
             width: 100%;
             height: calc(100% - 80px);
@@ -233,18 +60,18 @@
             padding: 10px;
             box-sizing: border-box;
         }
-        
+
         #preview {
             height: 100%;
             overflow-y: auto;
             padding: 10px;
         }
-        
+
         .buttons {
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         button {
             background: #007bff;
             color: white;
@@ -255,27 +82,23 @@
             margin: 0 5px;
             font-size: 14px;
         }
-        
+
         button:hover {
             background: #0056b3;
         }
-        
-        h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    letter-spacing: 0.05em; /* Adjust spacing to ensure clarity */
-    line-height: 1.2;      /* Proper spacing between lines */
-    margin: 20px 0;        /* Ensure space around the heading */
-    text-align: center;
-}
 
-        
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
         .title-inputs {
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
         }
-        
+
         .title-inputs input {
             flex: 1;
             padding: 5px;
@@ -290,40 +113,21 @@
         }
 
         button:disabled {
-            opacity: 1;
-        }
-
-        .btn {
-            background-color: #cccccc;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            opacity: 0.5;
             cursor: not-allowed;
-            margin: 0 5px;
-            font-size: 14px;
-            transition: background-color 0.3s, cursor 0.3s;
-        }
-
-        .btn-enabled {
-            background-color: #007bff;
-            cursor: pointer;
-        }
-
-        .btn-enabled:hover {
-            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1 id="mainTitle">Markdown + LaTeX Editor</h1>
 
-<div class="buttons">
-    <button onclick="copyLink()" class="btn" id="copyLinkBtn" disabled>Copy Editor Link</button>
-    <button onclick="copyHTML()" class="btn btn-enabled">Copy HTML</button>
-    <button onclick="createShareableLink()" class="btn" id="shareableLinkBtn" disabled>Create Shareable Link</button>
-    <button onclick="copyImage()" class="btn btn-enabled" id="copyImageBtn">Copy Image</button>
-</div>
+    <div class="buttons">
+        <button onclick="copyLink()" class="btn" id="copyLinkBtn" disabled>Copy Editor Link</button>
+        <button onclick="copyHTML()" class="btn btn-enabled">Copy HTML</button>
+        <button onclick="createShareableLink()" class="btn" id="shareableLinkBtn" disabled>Create Shareable Link</button>
+        <button onclick="copyImage()" class="btn btn-enabled" id="copyImageBtn">Copy Image</button>
+    </div>
+
     <div class="container">
         <div class="editor-container">
             <div class="title-inputs">
@@ -349,6 +153,71 @@ $$
         </div>
         <div id="errorMessage" class="error-message" style="display: none;">Title is required</div>
     </div>
+
+    <script>
+        function showButtonFeedback(button, message) {
+            const originalText = button.textContent;
+            button.textContent = message;
+            button.disabled = true;
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 2000);
+        }
+
+        window.onload = function () {
+            const editor = document.getElementById('editor');
+            const preview = document.getElementById('preview');
+            const titleInput = document.getElementById('title');
+            const subtitleInput = document.getElementById('subtitle');
+            const errorMessage = document.getElementById('errorMessage');
+
+            function validateTitle() {
+                const isEmpty = titleInput.value.trim() === '';
+                errorMessage.style.display = isEmpty ? 'block' : 'none';
+                const buttonsToToggle = [document.getElementById('copyLinkBtn'), document.getElementById('shareableLinkBtn')];
+                buttonsToToggle.forEach(button => button.disabled = isEmpty);
+            }
+
+            function renderMarkdown() {
+                validateTitle();
+                preview.innerHTML = marked.parse(editor.value);
+                if (window.MathJax) {
+                    MathJax.typesetClear([preview]);
+                    MathJax.typesetPromise([preview]);
+                }
+            }
+
+            editor.addEventListener('input', renderMarkdown);
+            renderMarkdown();
+
+            window.copyLink = function () {
+                const content = btoa(encodeURIComponent(editor.value));
+                const title = btoa(encodeURIComponent(titleInput.value));
+                const subtitle = btoa(encodeURIComponent(subtitleInput.value));
+                const link = `${window.location.origin}?content=${content}&title=${title}&subtitle=${subtitle}`;
+                navigator.clipboard.writeText(link).then(() => {
+                    showButtonFeedback(document.getElementById('copyLinkBtn'), 'Copied!');
+                });
+            };
+
+            window.copyHTML = function () {
+                const html = preview.innerHTML;
+                navigator.clipboard.writeText(html).then(() => {
+                    showButtonFeedback(document.getElementById('copyHTMLBtn'), 'Copied!');
+                });
+            };
+
+            window.copyImage = function () {
+                html2canvas(preview).then(canvas => {
+                    canvas.toBlob(blob => {
+                        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+                            showButtonFeedback(document.getElementById('copyImageBtn'), 'Copied!');
+                        });
+                    });
+                });
+            };
+        };
+    </script>
 </body>
 </html>
-
