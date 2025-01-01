@@ -3,18 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    <!-- Basic meta tags -->
-    <meta name="description" content="">
-    <!-- Open Graph meta tags -->
-    <meta property="og:title" content="">
-    <meta property="og:description" content="">
-    <meta property="og:type" content="article">
-    <meta property="og:site_name" content="">
-    <!-- Twitter Card meta tags -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="">
-    <meta name="twitter:description" content="">
+    <script>
+        // Immediately parse URL parameters and set meta tags before any other scripts load
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedTitle = urlParams.get('title');
+            const encodedSubtitle = urlParams.get('subtitle');
+            
+            if (encodedTitle) {
+                try {
+                    const decodedTitle = decodeURIComponent(atob(encodedTitle));
+                    const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
+                    const description = decodedSubtitle || decodedTitle;
+                    
+                    // Write meta tags directly in the HTML
+                    document.write(`
+                        <title>${decodedTitle}</title>
+                        <meta name="description" content="${description}">
+                        <meta property="og:title" content="${decodedTitle}">
+                        <meta property="og:description" content="${description}">
+                        <meta property="og:type" content="article">
+                        <meta property="og:site_name" content="Markdown + LaTeX Viewer">
+                        <meta name="twitter:card" content="summary">
+                        <meta name="twitter:title" content="${decodedTitle}">
+                        <meta name="twitter:description" content="${description}">
+                    `);
+                } catch (e) {
+                    document.write(`
+                        <title>Markdown + LaTeX Viewer</title>
+                        <meta name="description" content="View formatted content with Markdown and LaTeX equations">
+                        <meta property="og:title" content="Markdown + LaTeX Viewer">
+                        <meta property="og:description" content="View formatted content with Markdown and LaTeX equations">
+                        <meta property="og:type" content="article">
+                        <meta property="og:site_name" content="Markdown + LaTeX Viewer">
+                        <meta name="twitter:card" content="summary">
+                        <meta name="twitter:title" content="Markdown + LaTeX Viewer">
+                        <meta name="twitter:description" content="View formatted content with Markdown and LaTeX equations">
+                    `);
+                }
+            } else {
+                document.write(`
+                    <title>Markdown + LaTeX Viewer</title>
+                    <meta name="description" content="View formatted content with Markdown and LaTeX equations">
+                    <meta property="og:title" content="Markdown + LaTeX Viewer">
+                    <meta property="og:description" content="View formatted content with Markdown and LaTeX equations">
+                    <meta property="og:type" content="article">
+                    <meta property="og:site_name" content="Markdown + LaTeX Viewer">
+                    <meta name="twitter:card" content="summary">
+                    <meta name="twitter:title" content="Markdown + LaTeX Viewer">
+                    <meta name="twitter:description" content="View formatted content with Markdown and LaTeX equations">
+                `);
+            }
+        })();
+    </script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
     <script>
@@ -38,43 +79,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js" async></script>
     <script>
         (function() {
-            function updateMetaTags(title, description) {
-                // Update document title
-                document.title = title;
-                
-                // Update basic meta tags
-                document.querySelector('meta[name="description"]').setAttribute('content', description);
-                
-                // Update Open Graph meta tags
-                document.querySelector('meta[property="og:title"]').setAttribute('content', title);
-                document.querySelector('meta[property="og:description"]').setAttribute('content', description);
-                document.querySelector('meta[property="og:site_name"]').setAttribute('content', window.location.hostname);
-                
-                // Update Twitter Card meta tags
-                document.querySelector('meta[name="twitter:title"]').setAttribute('content', title);
-                document.querySelector('meta[name="twitter:description"]').setAttribute('content', description);
-            }
-
             function init() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const encodedContent = urlParams.get('content');
-                const encodedTitle = urlParams.get('title');
-                const encodedSubtitle = urlParams.get('subtitle');
-
-                if (!encodedContent || !encodedTitle) {
+                
+                if (!encodedContent) {
                     document.write('<div class="container"><div id="content"><p>No content to display.</p></div></div>');
                     return;
                 }
 
                 try {
                     const decodedContent = decodeURIComponent(atob(encodedContent));
-                    const decodedTitle = decodeURIComponent(atob(encodedTitle));
-                    const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
                     
-                    // Update meta tags
-                    const description = decodedSubtitle || decodedTitle;
-                    updateMetaTags(decodedTitle, description);
-
                     // Write the content
                     const container = document.createElement('div');
                     container.className = 'container';
@@ -85,14 +101,6 @@
                     
                     container.appendChild(contentDiv);
                     document.body.appendChild(container);
-
-                    // Notify parent when content is loaded
-                    window.parent.postMessage({
-                        type: 'content-loaded',
-                        title: decodedTitle,
-                        description: description,
-                        url: window.location.href
-                    }, '*');
                 } catch (e) {
                     console.error('Failed to load content:', e);
                     document.write('<div class="container"><div id="content"><p>Error: Failed to load content.</p></div></div>');
@@ -108,7 +116,81 @@
         })();
     </script>
     <style>
-        /* ... existing styles remain the same ... */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        #content {
+            line-height: 1.6;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+        
+        #content h1 { font-size: 2em; margin: 0.67em 0; }
+        #content h2 { font-size: 1.5em; margin: 0.83em 0; }
+        #content h3 { font-size: 1.17em; margin: 1em 0; }
+        #content h4 { font-size: 1em; margin: 1.33em 0; }
+        #content h5 { font-size: 0.83em; margin: 1.67em 0; }
+        #content h6 { font-size: 0.67em; margin: 2.33em 0; }
+        #content p { margin: 1em 0; }
+        #content pre { 
+            background: #f7f7f7; 
+            padding: 1em; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+        #content code { 
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            background: #f7f7f7;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+        #content img { 
+            max-width: 100%; 
+            height: auto; 
+            margin: 1em 0;
+        }
+        #content blockquote { 
+            border-left: 4px solid #ddd; 
+            margin: 1em 0; 
+            padding-left: 1em; 
+            color: #666;
+        }
+        #content ul, #content ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+        #content table {
+            border-collapse: collapse;
+            margin: 1em 0;
+            width: 100%;
+        }
+        #content table th, #content table td {
+            border: 1px solid #ddd;
+            padding: 0.5em;
+        }
+        #content hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 1em 0;
+        }
+        .mjx-chtml {
+            margin: 1em 0 !important;
+        }
     </style>
 </head>
 <body>
