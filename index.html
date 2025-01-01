@@ -29,7 +29,6 @@
             const editor = document.getElementById('editor');
             const preview = document.getElementById('preview');
             const titleInput = document.getElementById('title');
-            const subtitleInput = document.getElementById('subtitle');
             const errorMessage = document.getElementById('errorMessage');
             const buttons = document.querySelectorAll('button');
 
@@ -46,12 +45,10 @@
             const urlParams = new URLSearchParams(window.location.search);
             const content = urlParams.get('content');
             const title = urlParams.get('title');
-            const subtitle = urlParams.get('subtitle');
             if (content) {
                 try {
                     editor.value = decodeURIComponent(atob(content));
                     titleInput.value = title ? decodeURIComponent(atob(title)) : '';
-                    subtitleInput.value = subtitle ? decodeURIComponent(atob(subtitle)) : '';
                     renderMarkdown();
                 } catch (e) {
                     console.error('Failed to load content from URL');
@@ -61,7 +58,6 @@
             // Set up live preview
             editor.addEventListener('input', debounce(renderMarkdown, 300));
             titleInput.addEventListener('input', debounce(renderMarkdown, 300));
-            subtitleInput.addEventListener('input', debounce(renderMarkdown, 300));
             
             // Initial render
             renderMarkdown();
@@ -71,24 +67,13 @@
                 
                 // Update page title and meta tags
                 const pageTitle = titleInput.value || 'Markdown + LaTeX Editor';
-                const pageDescription = subtitleInput.value || 'Create and share formatted content with Markdown and LaTeX equations';
                 
                 document.getElementById('pageTitle').textContent = pageTitle;
                 document.getElementById('ogTitle').setAttribute('content', pageTitle);
-                document.getElementById('pageDescription').setAttribute('content', pageDescription);
-                document.getElementById('ogDescription').setAttribute('content', pageDescription);
+                document.getElementById('mainTitle').textContent = pageTitle;
                 
                 // Convert Markdown to HTML
-                preview.innerHTML = `<h1>${titleInput.value}</h1>`;
-                if (subtitleInput.value) {
-                    preview.innerHTML += `<h2>${subtitleInput.value}</h2>`;
-                }
-                preview.innerHTML += marked.parse(editor.value);
-                
-                // Update meta description with preview text
-                const previewText = preview.textContent.slice(0, 150) + '...';
-                document.querySelector('meta[name="description"]').setAttribute('content', previewText);
-                document.querySelector('meta[property="og:description"]').setAttribute('content', previewText);
+                preview.innerHTML = marked.parse(editor.value);
                 
                 // Render LaTeX
                 if (window.MathJax) {
@@ -97,39 +82,48 @@
                         console.error('MathJax error:', err);
                     });
                 }
-                document.getElementById('mainTitle').textContent = pageTitle;
+            }
+
+            function showButtonFeedback(button, message) {
+                const originalText = button.textContent;
+                button.textContent = message;
+                button.style.backgroundColor = '#28a745';
+                button.disabled = true;
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                    button.disabled = false;
+                }, 2000);
             }
 
             window.copyLink = function() {
                 const encoded = btoa(encodeURIComponent(editor.value));
                 const encodedTitle = btoa(encodeURIComponent(titleInput.value));
-                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
-                const link = `${window.location.origin}${window.location.pathname}?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
+                const link = `${window.location.origin}${window.location.pathname}?content=${encoded}&title=${encodedTitle}`;
                 navigator.clipboard.writeText(link).then(() => {
-                    alert('Link copied to clipboard!');
+                    showButtonFeedback(document.querySelector('button:nth-child(1)'), 'Copied!');
                 }).catch(() => {
-                    alert('Failed to copy link. Please copy the URL manually.');
+                    showButtonFeedback(document.querySelector('button:nth-child(1)'), 'Failed to copy');
                 });
             }
 
             window.copyHTML = function() {
                 const html = preview.innerHTML;
                 navigator.clipboard.writeText(html).then(() => {
-                    alert('HTML copied to clipboard!');
+                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Copied!');
                 }).catch(() => {
-                    alert('Failed to copy HTML. Please copy it manually.');
+                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Failed to copy');
                 });
             }
 
             window.createShareableLink = function() {
                 const encoded = btoa(encodeURIComponent(editor.value));
                 const encodedTitle = btoa(encodeURIComponent(titleInput.value));
-                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
-                const viewUrl = `view.html?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
+                const viewUrl = `view.html?content=${encoded}&title=${encodedTitle}`;
                 navigator.clipboard.writeText(new URL(viewUrl, window.location.href).href).then(() => {
-                    alert('Shareable link copied to clipboard!');
+                    showButtonFeedback(document.querySelector('button:nth-child(3)'), 'Copied!');
                 }).catch(() => {
-                    alert('Failed to copy link. Please copy the URL manually.');
+                    showButtonFeedback(document.querySelector('button:nth-child(3)'), 'Failed to copy');
                 });
             }
         };
@@ -234,7 +228,7 @@
         }
 
         button:disabled {
-            background-color: #cccccc;
+            background-color: #28a745;
             cursor: not-allowed;
         }
     </style>
@@ -250,7 +244,6 @@
         <div class="editor-container">
             <div class="title-inputs">
                 <input type="text" id="title" placeholder="Title (required)" required>
-                <input type="text" id="subtitle" placeholder="Subtitle (optional)">
             </div>
             <textarea id="editor" placeholder="Write your Markdown here... Use $...$ for inline LaTeX and $$...$$ for display LaTeX">
 # Welcome to the Markdown + LaTeX Editor!

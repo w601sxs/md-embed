@@ -42,25 +42,20 @@
             const urlParams = new URLSearchParams(window.location.search);
             const encodedContent = urlParams.get('content');
             const encodedTitle = urlParams.get('title');
-            const encodedSubtitle = urlParams.get('subtitle');
             
             if (encodedContent && encodedTitle) {
                 try {
                     const decodedContent = decodeURIComponent(atob(encodedContent));
                     const decodedTitle = decodeURIComponent(atob(encodedTitle));
-                    const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
                     
                     // Update page title and meta tags
                     document.getElementById('pageTitle').textContent = decodedTitle;
                     document.getElementById('ogTitle').setAttribute('content', decodedTitle);
-                    document.getElementById('pageDescription').setAttribute('content', decodedSubtitle || decodedTitle);
-                    document.getElementById('ogDescription').setAttribute('content', decodedSubtitle || decodedTitle);
+                    document.getElementById('pageDescription').setAttribute('content', decodedTitle);
+                    document.getElementById('ogDescription').setAttribute('content', decodedTitle);
                     
                     // Insert content
                     document.write('<div class="container"><h1>' + decodedTitle + '</h1>');
-                    if (decodedSubtitle) {
-                        document.write('<h2>' + decodedSubtitle + '</h2>');
-                    }
                     document.write('<div id="content">' + marked.parse(decodedContent) + '</div></div>');
                 } catch (e) {
                     console.error('Failed to load content from URL');
