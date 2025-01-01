@@ -41,13 +41,26 @@
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const encodedContent = urlParams.get('content');
+            const encodedTitle = urlParams.get('title');
+            const encodedSubtitle = urlParams.get('subtitle');
             
-            if (encodedContent) {
+            if (encodedContent && encodedTitle) {
                 try {
                     const decodedContent = decodeURIComponent(atob(encodedContent));
+                    const decodedTitle = decodeURIComponent(atob(encodedTitle));
+                    const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
+                    
+                    // Update meta tags
+                    document.title = decodedTitle;
+                    document.querySelector('meta[property="og:title"]').setAttribute('content', decodedTitle);
+                    document.querySelector('meta[name="description"]').setAttribute('content', decodedSubtitle || decodedTitle);
+                    document.querySelector('meta[property="og:description"]').setAttribute('content', decodedSubtitle || decodedTitle);
+                    
                     // Insert content immediately
-                    document.write('<div class="container"><div id="content">' + 
-                        marked.parse(decodedContent) + 
+                    document.write('<div class="container"><div id="content">' +
+                        `<h1>${decodedTitle}</h1>` +
+                        (decodedSubtitle ? `<h2>${decodedSubtitle}</h2>` : '') +
+                        marked.parse(decodedContent) +
                         '</div></div>');
                 } catch (e) {
                     document.write('<div class="container"><div id="content"><p>Error: Failed to load content.</p></div></div>');
