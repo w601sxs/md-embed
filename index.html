@@ -142,6 +142,36 @@ $$
         let isRendering = false;
         let lastRenderPromise = null;
 
+        window.onload = function() {
+            const editor = document.getElementById('editor');
+            const preview = document.getElementById('preview');
+            const titleInput = document.getElementById('title');
+            const errorMessage = document.getElementById('errorMessage');
+            const buttons = document.querySelectorAll('button');
+
+            function validateTitle() {
+                const isEmpty = titleInput.value.trim() === '';
+                errorMessage.style.display = isEmpty ? 'block' : 'none';
+                buttons.forEach(button => button.disabled = isEmpty);
+            }
+
+            titleInput.addEventListener('input', validateTitle);
+            validateTitle(); // Initial check
+            
+            // Initialize with URL params content if present
+            const urlParams = new URLSearchParams(window.location.search);
+            const content = urlParams.get('content');
+            const title = urlParams.get('title');
+            if (content) {
+                try {
+                    editor.value = decodeURIComponent(atob(content));
+                    titleInput.value = title ? decodeURIComponent(atob(title)) : '';
+                    renderMarkdown();
+                } catch (e) {
+                    console.error('Failed to load content from URL');
+                }
+            }
+
         // Wait for MathJax to be ready
         function waitForMathJax() {
             return new Promise((resolve) => {
@@ -152,6 +182,13 @@ $$
                 }
             });
         }
+
+                    // Set up live preview
+            editor.addEventListener('input', debounce(renderMarkdown, 300));
+            titleInput.addEventListener('input', debounce(renderMarkdown, 300));
+            
+            // Initial render
+            renderMarkdown();
 
         // Main render function
         async function renderContent() {
