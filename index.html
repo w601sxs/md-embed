@@ -105,9 +105,10 @@
     <h1>Markdown + LaTeX Editor</h1>
     
     <div class="buttons">
-        <button onclick="copyLink()" class="btn" id="copyLinkBtn">Copy Editor Link</button>
+        <button onclick="createShareableLink()" class="btn" id="shareableLinkBtn" disabled>Share link</button>
         <button onclick="copyHTML()" class="btn">Copy HTML</button>
         <button onclick="copyImage()" class="btn" id="copyImageBtn">Copy Image</button>
+        
     </div>
 
     <div class="container">
@@ -171,6 +172,28 @@ $$
                 isRendering = false;
             }
         }
+
+        window.createShareableLink = function() {
+            const editor = document.getElementById('editor');
+            const titleInput = document.getElementById('title');
+            const subtitleInput = document.getElementById('subtitle');
+            
+            const content = btoa(encodeURIComponent(editor.value));
+            const title = btoa(encodeURIComponent(titleInput.value));
+            const subtitle = btoa(encodeURIComponent(subtitleInput.value));
+            
+            const link = `${window.location.origin}?content=${content}&title=${title}&subtitle=${subtitle}`;
+            
+            navigator.clipboard.writeText(link).then(() => {
+                const shareButton = document.getElementById('shareableLinkBtn');
+                shareButton.textContent = 'Copied!';
+                shareButton.classList.add('success');
+                setTimeout(() => {
+                    shareButton.textContent = 'Create Shareable Link';
+                    shareButton.classList.remove('success');
+                }, 2000);
+            });
+        };
 
         // Copy image function
         async function copyImage() {
