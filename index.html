@@ -175,47 +175,37 @@ $$
         }
 
         window.copyLink = function() {
-            const editor = document.getElementById('editor');
-            const titleInput = document.getElementById('title');
-            const subtitleInput = document.getElementById('subtitle');
-            const content = btoa(encodeURIComponent(editor.value));
-            const title = btoa(encodeURIComponent(titleInput.value));
-            const subtitle = btoa(encodeURIComponent(subtitleInput.value));
-            const link = `${window.location.origin}?content=${content}&title=${title}&subtitle=${subtitle}`;
-            navigator.clipboard.writeText(link).then(() => {
-                showButtonFeedback(document.getElementById('copyLinkBtn'), 'Copied!');
-            });
-        };
+                const encoded = btoa(encodeURIComponent(editor.value));
+                const encodedTitle = btoa(encodeURIComponent(titleInput.value));
+                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
+                const link = `${window.location.origin}${window.location.pathname}?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
+                navigator.clipboard.writeText(link).then(() => {
+                    showButtonFeedback(document.getElementById('copyLinkBtn'), 'Copied!');
+                }).catch(() => {
+                    showButtonFeedback(document.getElementById('copyLinkBtn'), 'Failed to copy');
+                });
+            }
 
-        // Define copyHTML function globally
-        window.copyHTML = function() {
-            const preview = document.getElementById('preview');
-            const html = preview.innerHTML;
-            navigator.clipboard.writeText(html).then(() => {
-                showButtonFeedback(document.getElementById('copyHTMLBtn'), 'Copied!');
-            });
-        };
+            window.copyHTML = function() {
+                const html = preview.innerHTML;
+                navigator.clipboard.writeText(html).then(() => {
+                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Copied!');
+                }).catch(() => {
+                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Failed to copy');
+                });
+            }
 
-        window.createShareableLink = function() {
-            const editor = document.getElementById('editor');
-            const titleInput = document.getElementById('title');
-            const subtitleInput = document.getElementById('subtitle');
-            
-            const content = btoa(encodeURIComponent(editor.value));
-            const title = btoa(encodeURIComponent(titleInput.value));
-            const subtitle = btoa(encodeURIComponent(subtitleInput.value));
-            
-            const link = `${window.location.origin}?content=${content}&title=${title}&subtitle=${subtitle}`;
-            
-            navigator.clipboard.writeText(link).then(() => {
-                const shareButton = document.getElementById('shareableLinkBtn');
-                shareButton.textContent = 'Copied!';
-                shareButton.classList.add('success');
-                setTimeout(() => {
-                    shareButton.textContent = 'Create Shareable Link';
-                    shareButton.classList.remove('success');
-                }, 2000);
-            });
+            window.createShareableLink = function() {
+                const encoded = btoa(encodeURIComponent(editor.value));
+                const encodedTitle = btoa(encodeURIComponent(titleInput.value));
+                const encodedSubtitle = btoa(encodeURIComponent(subtitleInput.value));
+                const viewUrl = `view.html?content=${encoded}&title=${encodedTitle}&subtitle=${encodedSubtitle}`;
+                navigator.clipboard.writeText(new URL(viewUrl, window.location.href).href).then(() => {
+                    showButtonFeedback(document.getElementById('shareableLinkBtn'), 'Copied!');
+                }).catch(() => {
+                    showButtonFeedback(document.getElementById('shareableLinkBtn'), 'Failed to copy');
+                });
+            }
         };
 
         // Copy image function
