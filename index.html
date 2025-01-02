@@ -181,20 +181,29 @@ $$
         // Define copyImage function globally
         window.copyImage = function() {
             const preview = document.getElementById('preview');
-            // Force MathJax to re-render before capturing
-            MathJax.typesetClear([preview]);
-            MathJax.typesetPromise([preview]).then(() => {
-                html2canvas(preview, {
+            
+            // Create a promise to ensure MathJax is completely done
+            const captureImage = async () => {
+                // First clear any existing renders
+                await MathJax.typesetClear([preview]);
+                
+                // Single render pass
+                await MathJax.typesetPromise([preview]);
+                
+                // Now capture the image
+                const canvas = await html2canvas(preview, {
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
                     logging: false,
-                    onclone: function(clonedDoc) {
-                        // Ensure MathJax has fully rendered in the clone
-                        const clonedPreview = clonedDoc.getElementById('preview');
-                        return MathJax.typesetPromise([clonedPreview]);
-                    }
-                }).then(canvas => {
+                    // Remove the onclone callback as it was causing multiple renders
+                });
+                
+                return canvas;
+            };
+    
+            captureImage()
+                .then(canvas => {
                     canvas.toBlob(blob => {
                         navigator.clipboard.write([
                             new ClipboardItem({ 'image/png': blob })
@@ -203,7 +212,6 @@ $$
                         }).catch(err => console.error('Error copying image:', err));
                     });
                 });
-            });
         };
 
         // Window onload event handler
