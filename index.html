@@ -142,9 +142,9 @@
             window.copyHTML = function() {
                 const html = preview.innerHTML;
                 navigator.clipboard.writeText(html).then(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Copied!');
+                    showButtonFeedback(document.querySelector('button:nth-child(3)'), 'Copied!');
                 }).catch(() => {
-                    showButtonFeedback(document.querySelector('button:nth-child(2)'), 'Failed to copy');
+                    showButtonFeedback(document.querySelector('button:nth-child(3)'), 'Failed to copy');
                 });
             }
 
