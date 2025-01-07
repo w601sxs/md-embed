@@ -185,6 +185,35 @@
                 });
             }
 
+            window.downloadImage = async function() {
+                const preview = document.getElementById('preview');
+                const downloadButton = document.getElementById('downloadImageBtn');
+                
+                try {
+                    const canvas = await html2canvas(preview, {
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        backgroundColor: null
+                    });
+                    
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.href = dataUrl;
+                    link.download = 'img.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showButtonFeedback(downloadButton, 'Downloaded!');
+                } catch (err) {
+                    console.error('Download error:', err);
+                    showButtonFeedback(downloadButton, 'Failed to download');
+                }
+            }
+
+
             window.copyHTML = function() {
                 const html = preview.innerHTML;
                 navigator.clipboard.writeText(html).then(() => {
@@ -383,6 +412,7 @@
         <button onclick="createShareableLink()" class="btn" id="shareableLinkBtn" disabled>Create Shareable Link</button>
         <button onclick="copyHTML()" class="btn btn-enabled">Copy HTML</button>
         <button onclick="copyImage()" class="btn btn-enabled" id="copyImageBtn">Copy Image</button>
+        <button onclick="downloadImage()" class="btn btn-enabled" id="downloadImageBtn">Download Image</button>
     </div>
     <div class="container">
         <div class="editor-container">
