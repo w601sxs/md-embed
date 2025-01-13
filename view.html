@@ -14,7 +14,7 @@
     <meta name="twitter:description" content="View formatted content with Markdown and LaTeX equations">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
-    <script>
+        <script>
         window.MathJax = {
             tex: {
                 inlineMath: [['$', '$']],
@@ -47,33 +47,30 @@
                         const decodedSubtitle = encodedSubtitle ? decodeURIComponent(atob(encodedSubtitle)) : '';
                         const description = decodedSubtitle || decodedTitle;
                         
-                        // Only update visible title
                         document.title = decodedTitle;
+                        document.querySelector('meta[name="description"]').setAttribute('content', description);
+                        document.querySelector('meta[property="og:title"]').setAttribute('content', decodedTitle);
+                        document.querySelector('meta[property="og:description"]').setAttribute('content', description);
                     } catch (e) {
-                        console.error('Failed to update title:', e);
+                        console.error('Failed to update metadata:', e);
                     }
                 }
 
                 if (!encodedContent) {
-                    document.write('<div class="container"><div id="content"><p>No content to display.</p></div></div>');
+                    document.getElementById('content').innerHTML = '<p>No content to display.</p>';
                     return;
                 }
 
                 try {
                     const decodedContent = decodeURIComponent(atob(encodedContent));
-                    
-                    const container = document.createElement('div');
-                    container.className = 'container';
-                    
-                    const contentDiv = document.createElement('div');
-                    contentDiv.id = 'content';
+                    const contentDiv = document.getElementById('content');
                     contentDiv.innerHTML = marked.parse(decodedContent);
                     
-                    container.appendChild(contentDiv);
-                    document.body.appendChild(container);
+                    // Render LaTeX after Markdown is parsed
+                    MathJax.typesetPromise([contentDiv]).catch((err) => console.error('MathJax error:', err));
                 } catch (e) {
                     console.error('Failed to load content:', e);
-                    document.write('<div class="container"><div id="content"><p>Error: Failed to load content.</p></div></div>');
+                    document.getElementById('content').innerHTML = '<p>Error: Failed to load content.</p>';
                 }
             }
 
@@ -164,6 +161,9 @@
     </style>
 </head>
 <body>
+    <div class="container">
+        <div id="content"></div>
+    </div>
     <noscript>
         <div class="container">
             <div id="content">
