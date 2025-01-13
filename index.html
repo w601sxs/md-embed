@@ -92,31 +92,6 @@
                 }
             }
 
-            function adjustContainerHeight() {
-                // Reset the editor height first to get accurate scrollHeight
-                editor.style.height = 'auto';
-                
-                // const titleInputsHeight = document.querySelector('.title-inputs').offsetHeight;
-                // const editorHeight = editor.scrollHeight;
-                // const previewHeight = preview.scrollHeight;
-                
-                // // Get the content height (excluding padding)
-                // const maxContentHeight = Math.max(editorHeight, previewHeight);
-                
-                // // Set editor height to match content
-                // // editor.style.height = `${maxContentHeight}px`;
-                
-                // // Calculate container height with minimal padding
-                // const containerHeight = maxContentHeight + titleInputsHeight + 20; // Reduced padding
-                
-                // // Apply the height to containers, with maximum height limit
-                // const maxAllowedHeight = window.innerHeight - 200;
-                // const finalHeight = Math.min(containerHeight, maxAllowedHeight);
-                
-                // // editorContainer.style.height = `${finalHeight}px`;
-                // previewContainer.style.height = `${finalHeight}px`;
-                // container.style.height = `${finalHeight}px`;
-            }
 
             function renderMarkdown() {
                 validateTitle();
@@ -281,12 +256,14 @@
         }
         
         .container {
-            max-width: 65%;
+            max-width: 100%;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
             min-height: 300px;
+            resize: both;
+            overflow: auto;
         }
         
         .editor-container, .preview-container {
@@ -298,11 +275,14 @@
             display: flex;
             flex-direction: column;
             transition: height 0.1s ease-out;
+            resize: both;
+            overflow: auto;
         }
         
-        #editor {
+        #editor, #preview {
             width: 100%;
-            overflow-y: auto;
+            height: 100%;
+            overflow: auto;
             flex-grow: 1;
             min-height: 200px;
             padding: 5px;
